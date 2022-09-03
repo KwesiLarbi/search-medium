@@ -6,6 +6,7 @@ import (
 		"log"
 		"net/http"
 		"database/sql"
+		"os"
 
 		"github.com/gorilla/mux"
 		"github.com/joho/godotenv"
@@ -29,7 +30,7 @@ type Article struct {
 
 func getAllArticles(w http.ResponseWriter, r*http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-				
+		
 		rows, err := db.Query("select * from article_schema.articles")
 
 		if err != nil {
@@ -77,18 +78,19 @@ func getAllArticles(w http.ResponseWriter, r*http.Request) {
 func initializeDatabase() {
 		var err error
 
-		dotenvErr := godotenv.Load()
-		host := "localhost"
-		port := 5432
-		user := "postgres"
-		password := "postgres"
-		dbname := "google_medium"
-
+		dotenvErr := godotenv.Load(".env")
+		
 		if dotenvErr != nil {
 				log.Fatal("Error loading .env file")
 		}
+
+		host := os.Getenv("HOST")
+		port := os.Getenv("PORT")
+		user := os.Getenv("PG_USER")
+		password := os.Getenv("PASSWORD")
+		dbname := os.Getenv("DBNAME")
 		
-		connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+		connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
 		db, err = sql.Open("postgres", connStr)
 		checkError(err)
